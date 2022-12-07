@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+
+    <title>Number guessing game</title>
+
+    <style>
+      html {
+        font-family: sans-serif;
+      }
+
+      body {
+        width: 50%;
+        max-width: 800px;
+        min-width: 480px;
+        margin: 0 auto;
+      }
+      
+      .form input[type="number"] {
+        width: 200px;
+      }
+
+      .lastResult {
+        color: white;
+        padding: 3px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Number guessing game</h1>
+
+    <p>We have selected a random number between 1 and 100. See if you can guess it in 10 turns or fewer. We'll tell you if your guess was too high or too low.</p>
+
+    <div class="form">
+        <!-- input兩個變數，分別儲存表單中的文字輸入和送出按鈕，之後會用來控制送出玩家猜測的數字 -->
+      <label for="guessField">Enter a guess: </label>
+      <input type="number" min="1" max="100" required id="guessField" class="guessField">
+      <input type="submit" value="Submit guess" class="guessSubmit">
+    </div>
+
+    <!-- 三個常數分別儲存在HTML中結果段落的參照，在後面的程式碼中，參照被用來插入一些數值 -->
+    <div class="resultParas">
+      <p class="guesses"></p>
+      <p class="lastResult"></p>
+      <p class="lowOrHi"></p>
+    </div>
+
+    <script>
+        //   let指定變數 randomNumber 為數學運算1到100之間的隨機數字
+      let randomNumber = Math.floor(Math.random()*100)+1;
+
+        // 三個常數分別儲存在HTML中結果段落的參照，在後面的程式碼中，參照被用來插入一些數值
+      const guesses = document.querySelector('.guesses');
+      const lastResult = document.querySelector('.lastResult');
+      const lowOrHi = document.querySelector('.lowOrHi');
+      
+      // 兩個變數，分別儲存表單中的文字輸入和送出按鈕，之後會用來控制送出玩家猜測的數字
+      const guessSubmit = document.querySelector('.guessSubmit');
+      const guessField = document.querySelector('.guessField');
+        
+        
+      let guessCount = 1;
+      let resetButton;
+        /* 函式 自訂函式名 () {要執行的程式碼}
+        輸入函式碼跟括號可以執行函式 :checkGuess*/
+      function checkGuess() {
+
+        // 宣告名為userGuess的變數，並將值設置為表單中文字輸入格內的當前值。通過內建的Number() 方法運行此值，確保該值絕對是一個數字
+        var userGuess = Number(guessField.value); 
+
+        // 條件程式碼區塊。允許基於某個條件是否為真去選擇要不要執行程式碼。基本格式：if(一個比較測試){如果比較測試回傳true，則花括號內的會被執行，否則不會執行，繼續執行接下來的程式碼};
+        // 這裡，我們比較測試的是檢查guessCount變數是否等於1(即，是不是玩家的第一次嘗試)
+        if (guessCount ===1) {
+          // 如果是，把guesses段落文字內容設成 "Previous guesses:"
+            guesses.textContent = 'Previous guesses: ';
+        }
+        // 把userGuess的值附加到guesses段落的尾端，再加一個空格
+        guesses.textContent += userGuess+ ' ';
+
+        //第二個條件區塊
+        // 檢查使用者是否猜中了頂部設置的randomNumber
+        if (userGuess === randomNumber) {
+          // 如果是，在lastResult顯示恭喜
+          lastResult.textContent = 'Congratulations! You got it right!';
+          // 然後變更背景顏色
+          lastResult.style.backgroundColor = 'green';
+          // 在lowOrHi段落文字內容裡顯示空格(清除內容)
+          lowOrHi.textContent = '';
+          // 再運行一個叫做setGameOver()的函式
+          setGameOver();
+
+          // 如果沒有猜中，則檢查是否為玩家的最後一次機會
+        } else if (guessCount ===10) {
+          // 如果是，在lastResult顯示GAME OVER
+          lastResult.textContent = '!!!GAME OVER!!!'
+          // 然後運行函式
+          setGameOver();
+
+          // 如果以上都不是，顯示錯誤，並檢查如果猜的數字小於答案，顯示提示
+        } else {
+          lastResult.textContent = 'Wrong!';
+          lastResult.style.backgroundColor = "red";
+          if(userGuess < randomNumber) {
+            lowOrHi.textContent = 'Last guess was too low!';
+          }else if(userGuess > randomNumber) {
+            lowOrHi.textContent = 'Last guess was too high!';
+          }
+        }
+         //這裡準備下一次的猜測，++遞增加一在每一次猜測後，清空輸入格，提交後會繼續focus在輸入格
+        guessCount++;
+        guessField.value = '';
+        guessField.focus();
+      }
+      
+      //為guessSubmit按鈕添加一個事件偵聽器，是一個函式，接受兩個輸入值(叫參數)
+      //(監聽事件類型,想在事件發生時運行的程式碼)
+      guessSubmit.addEventListener('click',checkGuess);
+     
+      function setGameOver(){
+        //把disabled屬性設為true
+        guessField.disabled = true;
+        guessSubmit.disabled =true;
+        //產生一個新的<button>元素
+        resetButton = document.createElement('button');
+        //文字標籤設為Start new game
+        resetButton.textContent = 'Start new game';
+        //添加到HTML最尾端(那怎麼加到最上面)
+        document.body.appendChild(resetButton);
+        //an event listener on our new button so that when it is clicked, a function called resetGame() is run.
+        resetButton.addEventListener('click', resetGame);
+      }
+
+      function resetGame(){
+        //Puts the guessCount back down to 1.
+        guessCount = 1;
+
+        //Enpties all the text out of the information paragraphs. We select all paragraphs inside <div class="resulrParas"></div>, then loop through each one, setting their textContent to ''(an empty string).
+        var resetParas = document.querySelectorAll('.resultParas p');
+        for (var i = 0 ; i < resetParas.length ; i++) {
+          resetParas[i].textContent = '';
+        }
+
+        //Removes the rest button from our code.
+        resetButton.parentNode.removeChild(resetButton);
+
+        //Enables the form elements, and empties and focuses the text field, ready for a new guess to be entered.
+        guessField.disabled = false;
+        guessSubmit.disabled = false;
+        guessField.value = '';
+        guessField.focus();
+
+        //Removes the background color from the lastResult paragraph.
+        lastResult.style.backgroundColor = 'white';
+
+        //Generates a new random number so that you are not just guessing the same number again!
+        randomNumber = Math.floor(Math.random() * 100) + 1;
+      }
+
+    </script>
+  </body>
+</html>
